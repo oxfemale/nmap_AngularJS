@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.7/angular-route.js"></script>
+
+<body ng-app="myApp">
+
+<p><a href="#!">Main</a>
+<a href="#!scan">Scan</a>
+<a href="#!about">About</a>
+</p>
+
+<p>Click on the links to change the content.</p>
+
+<div ng-view>
+
+<script>
+var app = angular.module("myApp", ["ngRoute"]);
+
+app.config(function($routeProvider) {
+    $routeProvider
+    .when("/", {
+        template : "<h1>Main</h1><p>Click on the links to change this content</p>"
+    })
+    .when("/scan", {
+        templateUrl : "scan.html",
+        controller : "scanCtrl"        
+    })
+    .when("/scan", {
+        templateUrl : "scan.html",
+        controller : "scanCtrl"        
+    })
+    .when("/scan/:target", {
+        templateUrl : "scan.html",
+        controller : "scanCtrl"        
+    })
+    .when("/about", {
+        template : "<h1>About</h1><p>Some static text</p>"
+    });
+});
+
+app.controller("scanCtrl", function ($routeParams, $scope, $http, $location) {
+
+    $scope.scanFunc = function() {
+
+        if ( $scope.arguments == null ) {
+            $scope.arguments = " ";
+        }
+
+        $http({
+        url: 'http://' + $location.host() + ':8800/api',
+            method: "POST",
+            data: { "action": "nmap", "hosts": $scope.target, "arguments": $scope.arguments, "token": "34095ut0935ug9q8t9q8tfidfjoisdf" }
+        })
+        .then(function(response) {
+            $scope.output = ""
+            $scope.scanstats = response.data.nmap.nmap.scanstats
+            $scope.scanresult = response.data.nmap.scan
+        }, 
+        function(response) { // optional
+            $scope.output = response.statusText
+        });
+
+
+        $http({
+            method : "GET",
+            url: 'http://' + $location.host() + ':8800/api'
+        }).then(function mySuccess(response) {
+            $scope.output = response.daNmapta;
+        }, function myError(response) {
+            $scope.output = response.statusText;
+        });
+
+
+    };
+
+    if ( $routeParams.target != null ) {
+        $scope.target = $routeParams.target
+        $scope.scanFunc()
+    }
+});
+
+</script>
+
+</body></html>
